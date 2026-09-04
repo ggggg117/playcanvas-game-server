@@ -16,15 +16,34 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log('プレイヤーが接続しました:', socket.id);
 
-  // 移動データの同期
+  // 1. 移動データの同期
   socket.on('playerMove', (data) => {
     socket.broadcast.emit('playerMoved', {
       id: socket.id,
-      position: data
+      position: data,
+      yaw: data.yaw
     });
   });
 
-  // 切断処理
+  // 2. 射撃データの同期（※ これが抜けていました！）
+  socket.on('playerShoot', (data) => {
+    socket.broadcast.emit('playerShot', {
+      id: socket.id,
+      start: data.start,
+      end: data.end
+    });
+  });
+
+  // 3. ダメージデータの転送（※ これが抜けていました！）
+  socket.on('playerDamage', (data) => {
+    socket.broadcast.emit('playerTookDamage', {
+      targetId: data.targetId,
+      damage: data.damage,
+      attackerPos: data.attackerPos
+    });
+  });
+
+  // 4. 切断処理
   socket.on('disconnect', () => {
     console.log('切断されました:', socket.id);
     io.emit('playerDisconnected', socket.id);
